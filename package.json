@@ -1,0 +1,19 @@
+{
+  "name": "mmm-sleepmode",
+  "version": "1.0.0",
+  "description": "MagicMirror² module to put the display to sleep after a configurable timeout.",
+  "main": "MMM-SleepMode.js",
+  "scripts": {
+    "lint": "echo 'No linting configured.'"
+  },
+  "keywords": [
+    "magicmirror",
+    "module",
+    "raspberry-pi",
+    "sleep",
+    "display",
+    "power"
+  ],
+  "author": "",
+  "license": "MIT"
+}

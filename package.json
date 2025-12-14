@@ -14,6 +14,10 @@
     "display",
     "power"
   ],
-  "author": "",
+  "author": "pcheek13",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pcheek13/MMM-SleepMode.git"
+  },
   "license": "MIT"
 }

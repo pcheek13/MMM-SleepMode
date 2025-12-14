@@ -5,9 +5,16 @@
 Module.register("MMM-SleepMode", {
   defaults: {
     sleepAfterMinutes: 15,
-    sleepCommand: "vcgencmd display_power 0 || tvservice -o",
-    wakeCommand:
-      "vcgencmd display_power 1 || (tvservice -p && sudo chvt 6 && sudo chvt 7)",
+    sleepCommand: [
+      "/usr/bin/vcgencmd display_power 0",
+      "DISPLAY=:0 XAUTHORITY=/home/pi/.Xauthority /usr/bin/xset dpms force off",
+      "/usr/bin/tvservice -o",
+    ],
+    wakeCommand: [
+      "/usr/bin/vcgencmd display_power 1",
+      "DISPLAY=:0 XAUTHORITY=/home/pi/.Xauthority /usr/bin/xset dpms force on",
+      "/usr/bin/tvservice -p && sudo /usr/bin/chvt 6 && sudo /usr/bin/chvt 7",
+    ],
     resetNotifications: ["USER_PRESENCE", "SLEEP_MODE_RESET"],
     sleepNotifications: ["SLEEP_MODE_SLEEP_NOW"],
     wakeNotifications: ["SLEEP_MODE_WAKE", "REMOTE_ACTION"],
@@ -16,7 +23,10 @@ Module.register("MMM-SleepMode", {
   start() {
     this.sleepTimer = null;
     this.isSleeping = false;
-    this.log("Starting MMM-SleepMode with " + this.config.sleepAfterMinutes + " minute timeout.");
+    this.sleepAfterMs = Math.max(1, this.config.sleepAfterMinutes) * 60 * 1000;
+    this.log(
+      `Starting MMM-SleepMode with ${this.sleepAfterMs / 60000} minute timeout.`,
+    );
     this.scheduleSleep();
   },
 
@@ -62,9 +72,8 @@ Module.register("MMM-SleepMode", {
 
   scheduleSleep() {
     this.cancelSleep();
-    const delay = this.config.sleepAfterMinutes * 60 * 1000;
-    this.log("Scheduling sleep in " + this.config.sleepAfterMinutes + " minutes.");
-    this.sleepTimer = setTimeout(() => this.enterSleep(), delay);
+    this.log(`Scheduling sleep in ${this.sleepAfterMs / 60000} minutes.`);
+    this.sleepTimer = setTimeout(() => this.enterSleep(), this.sleepAfterMs);
   },
 
   cancelSleep() {
@@ -80,6 +89,7 @@ Module.register("MMM-SleepMode", {
     }
 
     this.isSleeping = true;
+    this.cancelSleep();
     this.sendSocketNotification("RUN_COMMAND", { command: this.config.sleepCommand });
     this.sendNotification("SLEEP_MODE_ACTIVATED");
     this.log("Sleep command executed.");
